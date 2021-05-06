@@ -174,10 +174,14 @@ namespace Daf.Meta
 			}
 		}
 
-		public void AddHub(Hub hub)
+		/// <summary>
+		/// Creates a new Hub and adds it at the 0th index in Model.Hubs.
+		/// </summary>
+		/// <param name="name">(Optional) Name of the new Hub. Default: "New Hub".</param>
+		/// <returns>The Hub object that was created.</returns>
+		public Hub AddHub(string name = "New Hub")
 		{
-			if (hub == null)
-				throw new ArgumentNullException($"Can't add a {nameof(Hub)} that is null.");
+			Hub hub = new(name);
 
 			hub.PropertyChanged += (s, e) =>
 			{
@@ -189,7 +193,9 @@ namespace Daf.Meta
 				hub.NotifyPropertyChanged("BusinessKeys");
 			};
 
-			Hubs.AddSorted(hub);
+			Hubs.Insert(0, hub);
+
+			return hub;
 		}
 
 		public void RemoveHub(Hub hub)
@@ -263,6 +269,57 @@ namespace Daf.Meta
 			}
 		}
 
+		public static LinkRelationship AddLinkRelationship(Link link, DataSource dataSource)
+		{
+			if (link == null || dataSource == null)
+				throw new InvalidOperationException("Link or DataSource was null!");
+
+			LinkRelationship linkRelationship = new(link);
+
+			foreach (StagingColumn bk in link.BusinessKeys)
+			{
+				LinkMapping linkMapping = new(bk);
+
+				linkMapping.PropertyChanged += (s, e) =>
+				{
+					linkRelationship.NotifyPropertyChanged("LinkMapping");
+				};
+
+				linkRelationship.Mappings.Add(linkMapping);
+			}
+
+			linkRelationship.PropertyChanged += (s, e) =>
+			{
+				dataSource.NotifyPropertyChanged("LinkRelationship");
+			};
+
+			dataSource.LinkRelationships.Add(linkRelationship);
+
+			return linkRelationship;
+		}
+
+		public static void RemoveLinkRelationship(LinkRelationship linkRelationship, DataSource dataSource)
+		{
+			if (linkRelationship == null || dataSource == null)
+				throw new InvalidOperationException("Link or DataSource was null!");
+			else
+			{
+				foreach (LinkMapping linkMapping in linkRelationship.Mappings)
+				{
+					linkMapping.ClearSubscribers();
+				}
+
+				linkRelationship.ClearSubscribers();
+
+				dataSource.LinkRelationships.Remove(linkRelationship);
+
+				linkRelationship.Unsubscribe();
+
+				// TODO: businessKeyComboBox is in Satellite, we need to send it a message to run the equivalent command.
+				//businessKeyComboBox.GetBindingExpression(ItemsControl.ItemsSourceProperty).UpdateTarget();
+			}
+		}
+
 		[JsonIgnore]
 		public List<string> LinkNames
 		{
@@ -282,10 +339,14 @@ namespace Daf.Meta
 			}
 		}
 
-		public void AddLink(Link link)
+		/// <summary>
+		/// Creates a new Link and adds it at the 0th index in Model.Links.
+		/// </summary>
+		/// <param name="name">(Optional) Name of the new Link. Default: "New Link".</param>
+		/// <returns>The Link object that was created.</returns>
+		public Link AddLink(string name = "New Link")
 		{
-			if (link == null)
-				throw new ArgumentNullException($"Can't add a {nameof(Link)} that is null.");
+			Link link = new(name);
 
 			link.PropertyChanged += (s, e) =>
 			{
@@ -297,7 +358,9 @@ namespace Daf.Meta
 				link.NotifyPropertyChanged("BusinessKeys");
 			};
 
-			Links.Add(link);
+			Links.Insert(0, link);
+
+			return link;
 		}
 
 		public void RemoveLink(Link link)
@@ -975,14 +1038,6 @@ namespace Daf.Meta
 
 				_instance.DataSources.Add(dataSource);
 			}
-		}
-
-		public static void DeleteBusinessKey(Hub hub, StagingColumn businessKey)
-		{
-			if (hub == null || businessKey == null)
-				throw new InvalidOperationException("Hub or BusinessKey was null!");
-
-			hub.RemoveBusinessKeyColumn(businessKey);
 		}
 
 		private static void SerializeSourceSystems(Model value, string folder)
