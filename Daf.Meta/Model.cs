@@ -12,6 +12,7 @@ using Dahomey.Json.Serialization.Conventions;
 using Daf.Meta.Layers;
 using Daf.Meta.Layers.Connections;
 using Daf.Meta.Layers.DataSources;
+using System.Linq;
 
 namespace Daf.Meta
 {
@@ -196,6 +197,34 @@ namespace Daf.Meta
 			Hubs.Insert(0, hub);
 
 			return hub;
+		}
+
+		/// <summary>
+		/// Returns a list of SSIS projects that has >0 data sources attached.
+		/// </summary>
+		/// <returns>A collection of SSIS project names</returns>
+		public List<string> GetSsisProjects()
+		{
+			List<string> returnList = new();
+
+			List<string> ssisProjects = SourceSystems
+				.Select(x => x.SsisProject)
+				.GroupBy(x => x).Select(g => g.First())
+				.ToList();
+
+			foreach (string ssisProject in ssisProjects)
+			{
+				foreach (DataSource dataSource in DataSources)
+				{
+					if (dataSource.SourceSystem.SsisProject == ssisProject)
+					{
+						returnList.Add(ssisProject);
+						break;
+					}
+				}
+			}
+
+			return returnList;
 		}
 
 		public void RemoveHub(Hub hub)

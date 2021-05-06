@@ -7,10 +7,11 @@ namespace Daf.Meta.Layers
 {
 	public class SourceSystem : PropertyChangedBaseClass, IComparable<SourceSystem>
 	{
-		public SourceSystem(string name, string shortName)
+		public SourceSystem(string name, string shortName, string ssisProject)
 		{
 			_name = name;
 			_shortName = shortName;
+			_ssisProject = ssisProject;
 		}
 
 		private string _name;
@@ -41,6 +42,22 @@ namespace Daf.Meta.Layers
 					_shortName = value;
 
 					NotifyPropertyChanged("ShortName");
+				}
+			}
+		}
+
+		private string _ssisProject;
+
+		public string SsisProject
+		{
+			get { return _ssisProject; }
+			set
+			{
+				if (_ssisProject != value)
+				{
+					_ssisProject = value;
+
+					NotifyPropertyChanged("SsisProject");
 				}
 			}
 		}

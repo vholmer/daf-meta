@@ -55,7 +55,7 @@ namespace Daf.Meta.Editor.ViewModels
 
 		private void AddSourceSystem()
 		{
-			SourceSystem sourceSystem = new(name: "NewSourceSystem", shortName: "XYZ");
+			SourceSystem sourceSystem = new(name: "NewSourceSystem", shortName: "XYZ", ssisProject: "General");
 
 			WeakReferenceMessenger.Default.Send(new AddSourceSystem(sourceSystem));
 

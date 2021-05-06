@@ -37,6 +37,16 @@ namespace Daf.Meta.Editor.ViewModels
 			}
 		}
 
+		[Category("General")]
+		public string SsisProject
+		{
+			get => SourceSystem.SsisProject;
+			set
+			{
+				SetProperty(SourceSystem.Name, value, SourceSystem, (sourceSystem, ssisProject) => sourceSystem.SsisProject = ssisProject, true);
+			}
+		}
+
 		// Preventing the inherited HasErrors property from showing up in the PropertyGrid.
 		[Browsable(false)]
 		public new bool HasErrors => base.HasErrors;
